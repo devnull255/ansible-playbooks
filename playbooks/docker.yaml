@@ -42,19 +42,25 @@
   connection: ssh
   gather_facts: yes
   tasks:
+  - name: update cache
+    yum:
+      name: '*'
+      state: latest
+      update_cache: yes
   - name: Install docker-ce dependency packages for Centos hosts
     yum: 
       name: "{{ item }}"
       state: latest
+      update_cache: yes
     with_items:
     - yum-utils
     - device-mapper-persistent-data
     - lvm2
-  - name: Add docker yum repository
-    yum_repository:
-      name:  docker-ce
-      description: Docker.io repo
-      baseurl: https://download.docker.com/linux/centos
+  - name: Add Docker repo
+    get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docer-ce.repo
+    become: yes
   - name: install docker-ce
     yum:
        name: docker-ce
