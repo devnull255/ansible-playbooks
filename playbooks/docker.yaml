@@ -1,0 +1,67 @@
+--- #Playbook to install docker
+- hosts: ubuntu
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  connection: ssh
+  gather_facts: yes
+  tasks:
+  - name: Install Python Pip
+    apt:
+      name: python-pip
+      state: latest
+  - name: Install dependency packages to allow apt to use a repository over HTTPS
+    apt: 
+      name: "{{ item }}"
+      state: latest
+    with_items: 
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+  - name: Install docker gpg key
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+  - name: Add APT repository for docker
+    apt_repository: 
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+  - name: Install docker-ce
+    apt:
+      name: docker-ce
+      state: latest
+      update_cache: yes
+  - name: install docker-py with pip
+    pip: 
+       name: docker-py
+       state: latest
+- hosts: centos
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  connection: ssh
+  gather_facts: yes
+  tasks:
+  - name: Install docker-ce dependency packages for Centos hosts
+    yum: 
+      name: "{{ item }}"
+      state: latest
+    with_items:
+    - yum-utils
+    - device-mapper-persistent-data
+    - lvm2
+  - name: Add docker yum repository
+    yum_repository:
+      name:  docker-ce
+      description: Docker.io repo
+      baseurl: https://download.docker.com/linux/centos
+  - name: install docker-ce
+    yum:
+       name: docker-ce
+       state: latest
+       update_cache: yes
+  - name: install docker-py with pip
+    pip: 
+       name: docker-py
+       state: latest
+
